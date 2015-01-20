@@ -812,16 +812,19 @@ class BasicEntityPersister
 
         // TRICKY: since the association is specular source and target are flipped
         foreach ($owningAssoc['targetToSourceKeyColumns'] as $sourceKeyColumn => $targetKeyColumn) {
-            if ( ! isset($sourceClass->fieldNames[$sourceKeyColumn])) {
+            if (isset($sourceClass->fieldNames[$sourceKeyColumn])) {
+                // unset the old value and set the new sql aliased value here. By definition
+                // unset($identifier[$targetKeyColumn] works here with how UnitOfWork::createEntity() calls this method.
+                $identifier[$this->getSQLTableAlias($targetClass->name) . "." . $targetKeyColumn] =
+                    $sourceClass->reflFields[$sourceClass->fieldNames[$sourceKeyColumn]]->getValue($sourceEntity);
+            } elseif (isset($sourceClass->identifier[0])) {
+                $identifier[$this->getSQLTableAlias($targetClass->name) . "." . $targetKeyColumn] =
+                    $sourceClass->reflFields[$sourceClass->identifier[0]]->getValue($sourceEntity);
+            } else {
                 throw MappingException::joinColumnMustPointToMappedField(
                     $sourceClass->name, $sourceKeyColumn
                 );
             }
-
-            // unset the old value and set the new sql aliased value here. By definition
-            // unset($identifier[$targetKeyColumn] works here with how UnitOfWork::createEntity() calls this method.
-            $identifier[$this->getSQLTableAlias($targetClass->name) . "." . $targetKeyColumn] =
-                $sourceClass->reflFields[$sourceClass->fieldNames[$sourceKeyColumn]]->getValue($sourceEntity);
 
             unset($identifier[$targetKeyColumn]);
         }
