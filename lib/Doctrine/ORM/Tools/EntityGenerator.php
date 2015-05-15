@@ -1256,8 +1256,8 @@ public function __construct(<params>)
 
             foreach ($metadata->lifecycleCallbacks as $name => $callbacks) {
                 foreach ($callbacks as $callback) {
-                    if ($code = $this->generateLifecycleCallbackMethod($name, $callback, $metadata)) {
-                        $methods[] = $code;
+                    if (!isset($methods[$callback]) && $code = $this->generateLifecycleCallbackMethod($name, $callback, $metadata)) {
+                        $methods[$callback] = $code;
                     }
                 }
             }
