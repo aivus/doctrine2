@@ -2,6 +2,7 @@
 
 namespace Doctrine\Tests\ORM\Functional;
 use Doctrine\ORM\Event\PreUpdateEventArgs;
+use Doctrine\ORM\Mapping\PreUpdate;
 use Doctrine\ORM\Query;
 
 class LifecycleCallbackTest extends \Doctrine\Tests\OrmFunctionalTestCase
@@ -267,6 +268,14 @@ DQL;
         $this->assertEquals(array('prePersist' => array(0 => 'doStuff')), $childMeta->lifecycleCallbacks);
     }
 
+    public function testLifecycleCallbacksWithTwoCallbackForOneMethod()
+    {
+        $childMeta = $this->_em->getClassMetadata(__NAMESPACE__ . '\LifecycleCallbackWithTwoCallbackForOneMethodEntity');
+        $this->assertEquals(array('prePersist' => array(0 => 'doSomething'), 'preUpdate' => array(0 => 'doSomething')), $childMeta->lifecycleCallbacks);
+    }
+
+
+
     public function testLifecycleListener_ChangeUpdateChangeSet()
     {
         $listener = new LifecycleListenerPreUpdate;
@@ -499,6 +508,20 @@ class LifecycleListenerPreUpdate
     public function preUpdate(PreUpdateEventArgs $eventArgs)
     {
         $eventArgs->setNewValue('name', 'Bob');
+    }
+}
+
+/** @Entity @HasLifecycleCallbacks */
+class LifecycleCallbackWithTwoCallbackForOneMethodEntity {
+    /** @Id @Column(type="integer") @GeneratedValue */
+    private $id;
+
+    /**
+     * @PrePersist
+     * @PreUpdate
+     */
+    function doSomething() {
+
     }
 }
 
